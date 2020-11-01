@@ -41,24 +41,21 @@ export const helloWorld = functions.https.onRequest((request, response) => {
 });
 
 export const saveContact = functions.https.onRequest((request, response) => {
-    let str: string = '{ ';
     let first_name = "";
     let last_name = "";
     for (const key in request.body) {
-        if (key == 'first_name') {
+        if (key === 'first_name') {
             first_name = request.body[key];
-        } else if (key == 'last_name') {
+        } else if (key === 'last_name') {
             last_name = request.body[key];
         }
-        str = str + ' { ' + key + ' = ' + request.body[key] + ' },'
     }
-    str = str + ' }';
 
     const collection_id = "VyperLogixCorp_Contacts";
     const doc_id = 'web: ' + last_name + ',' + first_name;
     const data = request.body;
     let was_ok: boolean = true;
-    let res1 = db.collection(collection_id).doc(doc_id).set(data);
+    const res1 = db.collection(collection_id).doc(doc_id).set(data);
     res1.catch(function (error) {
         was_ok = false;
         functions.logger.error("Cannot Save Web Contact -> " + error, { structuredData: true });
@@ -66,6 +63,7 @@ export const saveContact = functions.https.onRequest((request, response) => {
         functions.logger.info("Saved Web Contact.", { structuredData: true });
     });
 
+    /*
     let doc_count = 0;
     let res2 = db.collection(collection_id).select().get().then(function (querySnapshot) {
         doc_count = querySnapshot.docs.length;
@@ -76,14 +74,45 @@ export const saveContact = functions.https.onRequest((request, response) => {
     }).finally(function () {
         functions.logger.info("Collection doc count is valid.", { structuredData: true });
     });
+    */
 
     const response_data = {
-        "status" : was_ok,
-        "count" : doc_count
+        "status" : was_ok
+        //"count" : doc_count
     };
 
     response.contentType("application/json");
     //functions.logger.info("request.body -> " + request.body, { structuredData: true });
-    functions.logger.info("request.params -> " + str, { structuredData: true });
+    //functions.logger.info("request.params -> " + str, { structuredData: true });
     response.send(JSON.stringify(response_data));
+});
+
+export const getNewContacts = functions.https.onRequest((request, response) => {
+    const collection_id = "VyperLogixCorp_Contacts";
+    const collRef = db.collection(collection_id);
+    const snapshotPromise = collRef.where('handled', '==', false).get();
+
+    const data:any[] = [];
+
+    let was_ok: boolean = true;
+    snapshotPromise.then((snapshotQuery) => {
+        snapshotQuery.forEach(doc => {
+            const doc_data = doc.data();
+            data.push(doc_data);
+            functions.logger.info("*** " + doc.id + ' => ' + doc_data, { structuredData: true });
+        });
+
+        const response_data = {
+            "status": was_ok,
+            "data": data
+        };
+
+        response.contentType("application/json");
+        response.send(JSON.stringify(response_data));
+
+    }).catch(function (error) {
+        was_ok = false;
+        functions.logger.error("ERROR -> " + error, { structuredData: true });
+    });
+
 });

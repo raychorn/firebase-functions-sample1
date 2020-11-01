@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends \
     wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - && \
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
     apt-get install nodejs -y -q --fix-missing
 
 RUN curl -sL https://firebase.tools | bash

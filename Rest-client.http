@@ -16,5 +16,11 @@ Content-Type: application/json
 {
     "first_name" : "Jonny",
     "last_name" : "Herbert",
-    "phone" : "313-666-7890"
+    "full_name" : "Herbert, Jonny",
+    "phone" : "313-666-7890",
+    "handled" : false
 }
+
+GET https://us-central1-fir-project1-8dac5.cloudfunctions.net/getNewContacts
+Content-Type: application/json
+
