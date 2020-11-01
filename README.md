@@ -4,7 +4,7 @@
 
 - [About](#about)
 - [Getting Started](#getting_started)
-- [Usage](#usage)
+- [Deploy](#deploy)
 - [Contributing](../CONTRIBUTING.md)
 
 ## About <a name = "about"></a>
@@ -41,6 +41,7 @@ until finished
 
 End with an example of getting some data out of the system or using it for a little demo.
 
-## Usage <a name = "usage"></a>
+## Deployment <a name = "deploy"></a>
 
-Add notes about how to use the system.
+firebase deploy --only functions
+
