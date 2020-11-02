@@ -14,9 +14,17 @@ POST https://us-central1-fir-project1-8dac5.cloudfunctions.net/saveContact
 Content-Type: application/json
 
 {
-    "first_name" : "Sally",
+    "first_name" : "Sammy",
     "last_name" : "Appleseed",
-    "full_name" : "Appleseed, Sally",
+    "phone" : "321-654-7891",
+    "handled" : false
+}
+
+POST https://us-central1-fir-project1-8dac5.cloudfunctions.net/saveContact
+Content-Type: application/json
+
+{
+    "full_name" : "Appleseed, Tommy",
     "phone" : "321-654-7891",
     "handled" : false
 }

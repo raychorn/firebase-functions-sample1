@@ -9,6 +9,10 @@ const db = admin.firestore();
 
 const nodemailer = require('nodemailer');
 
+const collection_id = "VyperLogixCorp_Contacts";
+const no_reply_address = "no-reply@vyperlogix.com";
+const notify_address = "raychorn@gmail.com";
+
 const transporter = nodemailer.createTransport({
     host: 'email-smtp.us-east-2.amazonaws.com',
     port: 25,
@@ -31,7 +35,7 @@ const asHTML = ( (body:any) => {
 const submitEmail = ((collection: string, data: any) => {
     db.collection(collection)
         .add({
-            to: "raychorn@gmail.com",
+            to: notify_address,
             message: {
                 subject: "New Contact for www.VyperLogix.com",
                 text: JSON.stringify(data),
@@ -50,8 +54,8 @@ export const helloWorld = functions.https.onRequest((request, response) => {
     str = str + ' }';
 
     const mailOptions = {
-        from: "no-reply@vyperlogix.com",
-        to: "raychorn@gmail.com",
+        from: no_reply_address,
+        to: notify_address,
         subject: "email from firebase functions",
         html: "<h1>This is a Test</h1>" + "<p>" + str + "</p>" + "<p> <b>Email: </b>raychorn@hotmail.com</p>"
     };
@@ -65,17 +69,30 @@ export const helloWorld = functions.https.onRequest((request, response) => {
 export const saveContact = functions.https.onRequest((request, response) => {
     let first_name = "";
     let last_name = "";
-    for (const key in request.body) {
+    let full_name = "";
+    const data = request.body;
+    for (const key in data) {
         if (key === 'first_name') {
-            first_name = request.body[key];
+            first_name = data[key];
         } else if (key === 'last_name') {
-            last_name = request.body[key];
+            last_name = data[key];
+        } else if (key === 'full_name') {
+            full_name = data[key];
         }
     }
 
-    const collection_id = "VyperLogixCorp_Contacts";
+    if ( (first_name.length > 0) && (last_name.length > 0) && (full_name.length === 0) ) {
+        full_name = last_name + ', ' + first_name;
+        data["full_name"] = full_name;
+    } else if ( (full_name.length > 0) && (first_name.length === 0) && (last_name.length === 0) ) {
+        const toks = full_name.split(',');
+        first_name = toks[toks.length-1].trimStart().trimEnd();
+        last_name = toks[0].trimStart().trimEnd();
+        data["first_name"] = first_name;
+        data["last_name"] = last_name;
+    }
+
     const doc_id = 'web: ' + last_name + ',' + first_name;
-    const data = request.body;
     let was_ok: boolean = true;
     const res1 = db.collection(collection_id).doc(doc_id).set(data);
     res1.catch(function (error) {
@@ -97,7 +114,6 @@ export const saveContact = functions.https.onRequest((request, response) => {
 });
 
 export const getNewContacts = functions.https.onRequest((request, response) => {
-    const collection_id = "VyperLogixCorp_Contacts";
     const collRef = db.collection(collection_id);
     const snapshotPromise = collRef.where('handled', '==', false).get();
 
