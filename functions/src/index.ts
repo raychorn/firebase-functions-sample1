@@ -14,9 +14,32 @@ const transporter = nodemailer.createTransport({
     port: 25,
     secure: true,
     auth: {
-        user: 'AKIAW7PHWMWJRGYY3LOQ',
-        pass: 'BPbSWmFaB7R/rqqsyIjVHsLitzqLGVvdryeqUchyroUy'
+        user: 'AKIAW7PHWMWJQLDO3KA4',
+        pass: 'BNdNIX9k/IJEOdCioy268CnHneW02HuuGjSm/FKV8kb8'
     }
+});
+
+const asHTML = ( (body:any) => {
+    let content: string = '<UL>';
+    for (const key in body) {
+        content = content + '<LI>' + key + ' : ' + body[key] + '</LI>'
+    }
+    content = content + '</UL>';
+    return content;
+});
+
+const submitEmail = ((collection: string, data: any) => {
+    db.collection(collection)
+        .add({
+            to: "raychorn@gmail.com",
+            message: {
+                subject: "New Contact for www.VyperLogix.com",
+                text: JSON.stringify(data),
+                html: asHTML(data)
+            }
+        }).then(() => 
+            functions.logger.info("Queued email for delivery!", { structuredData: true })
+    ).catch(() => 'obligatory catch');
 });
 
 export const helloWorld = functions.https.onRequest((request, response) => {
@@ -28,14 +51,13 @@ export const helloWorld = functions.https.onRequest((request, response) => {
 
     const mailOptions = {
         from: "no-reply@vyperlogix.com",
-        to: "raychorn80231@gmail.com",
+        to: "raychorn@gmail.com",
         subject: "email from firebase functions",
         html: "<h1>This is a Test</h1>" + "<p>" + str + "</p>" + "<p> <b>Email: </b>raychorn@hotmail.com</p>"
     };
 
     transporter.sendMail(mailOptions);
     response.contentType("application/json");
-    //functions.logger.info("request.body -> " + request.body, { structuredData: true });
     functions.logger.info("request.params -> " + str, { structuredData: true });
     response.send('{ "message" : "Hello from Firebase!" }');
 });
@@ -60,31 +82,18 @@ export const saveContact = functions.https.onRequest((request, response) => {
         was_ok = false;
         functions.logger.error("Cannot Save Web Contact -> " + error, { structuredData: true });
     }).finally(function () {
+
+        submitEmail("mail-to", data);
         functions.logger.info("Saved Web Contact.", { structuredData: true });
-    });
 
-    /*
-    let doc_count = 0;
-    let res2 = db.collection(collection_id).select().get().then(function (querySnapshot) {
-        doc_count = querySnapshot.docs.length;
-    });
-    res2.catch(function (error) {
-        doc_count = -1;
-        functions.logger.error("Cannot get collection doc count -> " + error, { structuredData: true });
-    }).finally(function () {
-        functions.logger.info("Collection doc count is valid.", { structuredData: true });
-    });
-    */
+        const response_data = {
+            "status": was_ok
+        };
 
-    const response_data = {
-        "status" : was_ok
-        //"count" : doc_count
-    };
+        response.contentType("application/json");
+        response.send(JSON.stringify(response_data));
 
-    response.contentType("application/json");
-    //functions.logger.info("request.body -> " + request.body, { structuredData: true });
-    //functions.logger.info("request.params -> " + str, { structuredData: true });
-    response.send(JSON.stringify(response_data));
+    });
 });
 
 export const getNewContacts = functions.https.onRequest((request, response) => {

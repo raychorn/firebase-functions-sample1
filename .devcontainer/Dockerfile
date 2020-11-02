@@ -33,11 +33,16 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && \
 RUN curl -sL https://firebase.tools | bash
 
 RUN apt-get upgrade git -y --fix-missing && \
-    git --version && \
-    git config --global user.email "raychorn@gmail.com" && \
-    git config --global user.name "Ray C Horn"  && \
     apt install default-jre -y --fix-missing && \
     apt install openjdk-11-jre-headless -y --fix-missing && \
     apt install openjdk-8-jre-headless -y --fix-missing 
 
-
+RUN apt install libz-dev libssl-dev libcurl4-gnutls-dev libexpat1-dev gettext cmake gcc -y && \
+    cd /tmp && \
+    curl -o git.tar.gz https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.29.2.tar.gz && \
+    tar -zxf git.tar.gz && \
+    cd git-* && \
+    make prefix=/usr/local all && \
+    make prefix=/usr/local install && \
+    git config --global user.email "raychorn@gmail.com" && \
+    git config --global user.name "Ray C Horn" 
