@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const asHTML = ( (body:any) => {
+const asHTML = ((body: any) => {
     let content: string = '<UL>';
     for (const key in body) {
         content = content + '<LI>' + key + ' : ' + body[key] + '</LI>'
@@ -41,9 +41,9 @@ const submitEmail = ((collection: string, data: any) => {
                 text: JSON.stringify(data),
                 html: asHTML(data)
             }
-        }).then(() => 
+        }).then(() =>
             functions.logger.info("Queued email for delivery!", { structuredData: true })
-    ).catch(() => 'obligatory catch');
+        ).catch(() => 'obligatory catch');
 });
 
 export const helloWorld = functions.https.onRequest((request, response) => {
@@ -81,12 +81,12 @@ export const saveContact = functions.https.onRequest((request, response) => {
         }
     }
 
-    if ( (first_name.length > 0) && (last_name.length > 0) && (full_name.length === 0) ) {
+    if ((first_name.length > 0) && (last_name.length > 0) && (full_name.length === 0)) {
         full_name = last_name + ', ' + first_name;
         data["full_name"] = full_name;
-    } else if ( (full_name.length > 0) && (first_name.length === 0) && (last_name.length === 0) ) {
+    } else if ((full_name.length > 0) && (first_name.length === 0) && (last_name.length === 0)) {
         const toks = full_name.split(',');
-        first_name = toks[toks.length-1].trimStart().trimEnd();
+        first_name = toks[toks.length - 1].trimStart().trimEnd();
         last_name = toks[0].trimStart().trimEnd();
         data["first_name"] = first_name;
         data["last_name"] = last_name;
@@ -117,7 +117,7 @@ export const getNewContacts = functions.https.onRequest((request, response) => {
     const collRef = db.collection(collection_id);
     const snapshotPromise = collRef.where('handled', '==', false).get();
 
-    const data:any[] = [];
+    const data: any[] = [];
 
     let was_ok: boolean = true;
     snapshotPromise.then((snapshotQuery) => {

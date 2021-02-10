@@ -17,7 +17,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-npm install firebase-admin
+npm install firebase-admin --save
 npm install nodemailer
 npm i -S nodemailer
 
