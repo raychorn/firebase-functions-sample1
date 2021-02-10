@@ -1,3 +1,8 @@
+###
+GET https://us-central1-fir-project1-8dac5.cloudfunctions.net/helloWorld
+Content-Type: application/json
+
+###
 POST https://us-central1-fir-project1-8dac5.cloudfunctions.net/helloWorld
 Content-Type: application/json
 
