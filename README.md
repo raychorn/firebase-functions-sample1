@@ -23,5 +23,18 @@ npm install firebase-admin --save
 
 ## Deployment <a name = "deploy"></a>
 
+```
 firebase deploy --only functions
 
+firebase deploy --only "functions:getArticles,functions:helloWorld"
+```
+
+### env.ts
+
+```
+const querystring = require("querystring");
+
+export const environ: any = {
+  password: querystring.stringify("put-your-password-here"),
+};
+```
