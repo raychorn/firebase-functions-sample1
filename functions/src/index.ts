@@ -1,38 +1,90 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
-const express = require('express');
-const cors = require('cors');
-const app = express();
+import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 //
+const https = require("https");
+
 admin.initializeApp();
 
-//const db = admin.firestore();
+/* eslint indent: ["error", 4] */
 
-app.use(cors({ origin: false }));
+/* eslint "require-jsdoc": ["error", {
+    "require": {
+        "FunctionDeclaration": false,
+        "MethodDefinition": false,
+        "ClassDeclaration": false,
+        "ArrowFunctionExpression": false,
+        "FunctionExpression": false
+    }
+}]*/
+
+// const db = admin.firestore();
+
+interface LooseObject {
+    [key: string]: any
+}
+
+let httpbinData: LooseObject = {};
+
+function delay(ms: number, result?: any) {
+    return new Promise((resolve) => setTimeout(() => resolve(result), ms));
+}
+
+// getIpAddress...
+function getIpAddress() {
+    https.get("https://httpbin.org/ip", (response: any) => {
+        // called when a data chunk is received.
+        response.on("data", (chunk: any) => {
+            httpbinData = JSON.parse(chunk);
+            functions.logger.info("chunk -> " + chunk, {structuredData: true});
+        });
+
+        // called when the complete response is received.
+        response.on("end", () => {
+            functions.logger.info("end -> " + JSON.stringify(httpbinData),
+                {structuredData: true});
+        });
+    }).on("error", (error: any) => {
+        httpbinData = {"origin": error.message};
+        functions.logger.info("Error: " + error.message,
+            {structuredData: true});
+    });
+}
 
 export const helloWorld = functions.https.onRequest((request, response) => {
-    let str: string = '{ ';
-    for (const key in request.body) {
-        str = str + ' { ' + key + ' = ' + request.body[key] + ' },'
+    getIpAddress();
+
+    const resp: LooseObject = {};
+    resp.message = "Hello, again, from Firebase!";
+    const obj: LooseObject = {};
+    for (const k1 in request.body) {
+        if ({}.hasOwnProperty.call(request.body, k1)) {
+            obj.key = request.body[k1];
+        }
     }
-    str = str + ' }';
+    resp.body = obj;
+
+    const queryObj: LooseObject = {};
+    for (const k2 in request.query) {
+        if ({}.hasOwnProperty.call(request.body, k2)) {
+            queryObj.key = request.query[k2];
+        }
+    }
+    resp.query = queryObj;
+
+    resp.params = request.params;
+    resp.query = request.query;
+
+    while (!{}.hasOwnProperty.call(httpbinData, "origin")) {
+        (async () => {
+            await delay(100);
+        })();
+    }
+    resp.ipAddress = httpbinData;
 
     response.contentType("application/json");
-    functions.logger.info("request.params -> " + str, { structuredData: true });
-    response.send('{ "message" : "Hello, again, from Firebase!" }');
+    response.send(JSON.stringify(resp));
 });
 
-app.get('/hello-world', (request, response) => {
-    response.contentType("application/json");
-    response.end('{"response":"Received GET request!"}');
-});
 
-app.post('/hello-world', (request, response) => {
-    response.contentType("application/json");
-    response.end('{"response":"Received GET request!"}');
-});
-
-// Expose Express API as a single Cloud Function:
-exports.widgets = functions.https.onRequest(app);
