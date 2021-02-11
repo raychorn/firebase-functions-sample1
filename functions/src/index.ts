@@ -27,10 +27,6 @@ interface LooseObject {
 
 let httpbinData: LooseObject = {};
 
-function delay(ms: number, result?: any) {
-    return new Promise((resolve) => setTimeout(() => resolve(result), ms));
-}
-
 // getIpAddress...
 function getIpAddress() {
     https.get("https://httpbin.org/ip", (response: any) => {
@@ -76,11 +72,6 @@ export const helloWorld = functions.https.onRequest((request, response) => {
     resp.params = request.params;
     resp.query = request.query;
 
-    while (!{}.hasOwnProperty.call(httpbinData, "origin")) {
-        (async () => {
-            await delay(100);
-        })();
-    }
     resp.ipAddress = httpbinData;
 
     response.contentType("application/json");
